@@ -3,12 +3,14 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginForm } from './components/auth/LoginForm';
 import { AppHeader } from './components/layout/AppHeader';
 import { Sidebar } from './components/layout/Sidebar';
-import { PoliceOfficerView } from './components/views/PoliceOfficerView';
-import { InvestigatorView } from './components/views/InvestigatorView';
+import { PoliceCategoryUploadView } from './components/views/PoliceCategoryUploadView';
+import { InvestigatorCategoryUploadView } from './components/views/InvestigatorCategoryUploadView';
 import { ForensicView } from './components/views/ForensicView';
 import { LawyerView } from './components/views/LawyerView';
 import { AccessRestricted } from './components/views/AccessRestricted';
 import { CaseSelection } from './components/views/CaseSelection';
+
+import { AuditTrailView } from './components/views/AuditTrailView';
 
 const DashboardContent: React.FC = () => {
   const { user, activeCaseId, activeTab, canAccess } = useAuth();
@@ -31,11 +33,15 @@ const DashboardContent: React.FC = () => {
       return <AccessRestricted />;
     }
 
+    if (activeTab === 'police_audit_trail') {
+      return <AuditTrailView />;
+    }
+
     if (activeTab.startsWith('police_')) {
-      return <PoliceOfficerView />;
+      return <PoliceCategoryUploadView />;
     }
     if (activeTab.startsWith('investigator_')) {
-      return <InvestigatorView />;
+      return <InvestigatorCategoryUploadView />;
     }
     if (activeTab.startsWith('forensic_')) {
       return <ForensicView />;
@@ -44,7 +50,7 @@ const DashboardContent: React.FC = () => {
       return <LawyerView />;
     }
 
-    return <PoliceOfficerView />;
+    return <PoliceCategoryUploadView />;
   };
 
   return (

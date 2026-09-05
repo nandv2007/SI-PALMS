@@ -10,7 +10,7 @@ export const ROLE_CONFIGS: Record<RolePrefix, RoleConfig> = {
     accentBorder: 'border-blue-500',
     iconName: 'Shield',
     description: 'Upload case file details & evidence anytime for assigned cases.',
-    allowedWorkspaces: ['police_case_upload', 'police_checkout'],
+    allowedWorkspaces: ['police_case_upload', 'police_audit_trail'],
     primaryActions: [
       'Upload New Case Details & Files',
       'Attach Incident Reports & Seizure Memos',
@@ -72,6 +72,8 @@ export const INITIAL_CASES: Record<string, CaseRecord> = {
     incidentLocation: 'Sector 14 Financial Quarter',
     status: 'OPEN_INVESTIGATION',
     assignedOfficerIds: ['PO-1042', 'IN-8805', 'FO-4091', 'LW-9120'],
+    assignedLawyerId: 'LW-9120',
+    assignedLawyerName: 'Advocate Meera Deshmukh',
     uploadedFiles: [] // START CLEAN WITH ZERO PRE-FILLED FILES
   },
   'CASE-103': {
@@ -79,7 +81,9 @@ export const INITIAL_CASES: Record<string, CaseRecord> = {
     title: 'Downtown Commercial Financial Fraud',
     incidentLocation: 'Metro Bank Tower #02',
     status: 'FORENSIC_REVIEW',
-    assignedOfficerIds: ['PO-2055', 'IN-8805', 'FO-4091', 'LW-9120'],
+    assignedOfficerIds: ['PO-2055', 'IN-8805', 'FO-4091'],
+    assignedLawyerId: null,
+    assignedLawyerName: null,
     uploadedFiles: [] // START CLEAN WITH ZERO PRE-FILLED FILES
   },
   'CASE-104': {
@@ -87,7 +91,9 @@ export const INITIAL_CASES: Record<string, CaseRecord> = {
     title: 'High-Tech Cyber Intrusion & Ransomware',
     incidentLocation: 'State Server Data Center',
     status: 'OPEN_INVESTIGATION',
-    assignedOfficerIds: ['PO-1042', 'IN-8805', 'LW-9120'],
+    assignedOfficerIds: ['PO-1042', 'IN-8805'],
+    assignedLawyerId: null,
+    assignedLawyerName: null,
     uploadedFiles: [] // START CLEAN WITH ZERO PRE-FILLED FILES
   }
 };

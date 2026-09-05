@@ -29,14 +29,14 @@ export const LoginForm: React.FC = () => {
   const prefixMatch = officerId.trim().match(/^(PO|IN|FO|LW)/i);
   const detectedPrefix = prefixMatch ? (prefixMatch[0].toUpperCase() as keyof typeof ROLE_CONFIGS) : null;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!officerId.trim() || !password.trim()) {
       setError('Please enter your Officer ID and password.');
       return;
     }
 
-    const res = login(officerId, password);
+    const res = await login(officerId, password);
     if (res.status === 'NEW_OFFICER_REGISTRATION_REQUIRED') {
       setRegId(officerId.toUpperCase());
       setRegPass(password);
@@ -50,47 +50,60 @@ export const LoginForm: React.FC = () => {
     }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim() || !regId.trim() || !regPass.trim()) {
       setError('Please complete all required fields for officer registration.');
       return;
     }
 
-    registerOfficer(
-      {
-        id: regId.toUpperCase(),
-        password: regPass,
-        name: regName,
-        rankTitle: ROLE_CONFIGS[regRole === 'POLICE_OFFICER' ? 'PO' : regRole === 'INVESTIGATOR' ? 'IN' : regRole === 'FORENSIC_OFFICER' ? 'FO' : 'LW'].title,
-        role: regRole,
-        department: regDept,
-        station: regStation
-      }
-    );
+    await registerOfficer({
+      id: regId.toUpperCase(),
+      password: regPass,
+      name: regName,
+      rankTitle: ROLE_CONFIGS[regRole === 'POLICE_OFFICER' ? 'PO' : regRole === 'INVESTIGATOR' ? 'IN' : regRole === 'FORENSIC_OFFICER' ? 'FO' : 'LW'].title,
+      role: regRole,
+      department: regDept,
+      station: regStation
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-slate-50">
       
-      {/* Centered Professional White Login Card */}
-      <div className="w-full max-w-lg white-panel rounded-2xl p-8 border border-slate-200 shadow-xl space-y-6">
+      {/* Background glow accents */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Main White Card Container */}
+      <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-slate-200 shadow-xl space-y-6 relative z-10">
         
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center mx-auto text-white shadow-md">
-            <Shield className="w-8 h-8 text-cyan-400" />
+        <div className="text-center space-y-3">
+          <div className="relative inline-block">
+            <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto text-white shadow-lg shadow-blue-600/30">
+              <Shield className="w-9 h-9" />
+            </div>
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-wider">SI-PALMS PORTAL</h1>
-          <p className="text-xs text-slate-500 font-medium">Police Asset & Evidence Lifecycle Management System</p>
+
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h1 className="text-2xl font-black text-slate-900 tracking-wider">SI-PALMS</h1>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                v2.0 PRO
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 font-medium">Secure Document & Blockchain Asset Portal</p>
+          </div>
         </div>
 
         {/* Mode Switcher Tabs */}
-        <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200">
+        <div className="flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200">
           <button
             type="button"
             onClick={() => { setMode('LOGIN'); setError(''); setNotice(''); }}
-            className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all cursor-pointer ${
+            className={`flex-1 text-xs font-bold py-2.5 rounded-xl transition-all cursor-pointer ${
               mode === 'LOGIN'
                 ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
                 : 'text-slate-500 hover:text-slate-900'
@@ -101,13 +114,13 @@ export const LoginForm: React.FC = () => {
           <button
             type="button"
             onClick={() => { setMode('REGISTER'); setError(''); setNotice(''); }}
-            className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all cursor-pointer ${
+            className={`flex-1 text-xs font-bold py-2.5 rounded-xl transition-all cursor-pointer ${
               mode === 'REGISTER'
                 ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            Create Account
+            Register Account
           </button>
         </div>
 
@@ -128,8 +141,8 @@ export const LoginForm: React.FC = () => {
         {/* LOGIN FORM */}
         {mode === 'LOGIN' && (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Officer ID
               </label>
               <div className="relative">
@@ -137,8 +150,8 @@ export const LoginForm: React.FC = () => {
                   type="text"
                   value={officerId}
                   onChange={(e) => setOfficerId(e.target.value)}
-                  placeholder="e.g. PO-1042, FO-4091, IN-8805, LW-9120"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  placeholder="e.g. PO-1234, FO-4091, IN-8805, LW-9120"
+                  className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
                   required
                 />
                 {detectedPrefix && (
@@ -151,8 +164,8 @@ export const LoginForm: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Password
               </label>
               <div className="relative">
@@ -161,7 +174,7 @@ export const LoginForm: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter officer password..."
-                  className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
                   required
                 />
                 <button
@@ -176,9 +189,9 @@ export const LoginForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Sign In</span>
+              <span>Authenticate Session</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -194,7 +207,7 @@ export const LoginForm: React.FC = () => {
                 value={regName}
                 onChange={(e) => setRegName(e.target.value)}
                 placeholder="e.g. Inspector Ramesh Shah"
-                className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
                 required
               />
             </div>
@@ -206,7 +219,7 @@ export const LoginForm: React.FC = () => {
                 value={regId}
                 onChange={(e) => setRegId(e.target.value)}
                 placeholder="e.g. PO-9901, IN-4020, FO-5011, LW-2010"
-                className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-mono text-xs"
                 required
               />
             </div>
@@ -218,17 +231,17 @@ export const LoginForm: React.FC = () => {
                 value={regPass}
                 onChange={(e) => setRegPass(e.target.value)}
                 placeholder="Set officer password..."
-                className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Officer Role</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Officer Role Clearance</label>
               <select
                 value={regRole}
                 onChange={(e) => setRegRole(e.target.value as OfficerRole)}
-                className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-xs"
               >
                 <option value="POLICE_OFFICER">Police Officer (PO) - Case Details Upload</option>
                 <option value="FORENSIC_OFFICER">Forensic Officer (FO) - Lab Report Upload</option>
@@ -239,9 +252,9 @@ export const LoginForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <UserPlus className="w-4 h-4" /> Create Portal Account & Log In
+              <UserPlus className="w-4 h-4" /> Create Account & Log In
             </button>
           </form>
         )}
