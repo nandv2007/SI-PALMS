@@ -1,5 +1,6 @@
 import type { UserProfile, CaseRecord, UploadedCaseFile, CaseFileCategory, SecurityLog } from '../types/auth';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const TOKEN_KEY = 'sipalms_jwt_token_v3';
 
 export interface AuditLogRecord {
@@ -65,6 +66,7 @@ export function getFileUrlWithToken(url?: string): string | undefined {
 
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
+
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {})
   };
@@ -77,12 +79,13 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     headers['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(endpoint, {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers
   });
 
   const data = await response.json();
+
   if (!response.ok && data.message) {
     throw new Error(data.message);
   }
@@ -105,6 +108,7 @@ export const api = {
     if (res.token) {
       setAuthToken(res.token);
     }
+
     return res;
   },
 
@@ -121,6 +125,7 @@ export const api = {
     if (res.token) {
       setAuthToken(res.token);
     }
+
     return res;
   },
 
@@ -133,28 +138,40 @@ export const api = {
   },
 
   async openCase(caseNumber: string) {
-    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>(`/api/cases/${encodeURIComponent(caseNumber)}/open`, {
-      method: 'POST'
-    });
+    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>(
+      `/api/cases/${encodeURIComponent(caseNumber)}/open`,
+      {
+        method: 'POST'
+      }
+    );
   },
 
   async addCase(caseNumber: string) {
-    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>('/api/cases/add', {
-      method: 'POST',
-      body: JSON.stringify({ caseNumber })
-    });
+    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>(
+      '/api/cases/add',
+      {
+        method: 'POST',
+        body: JSON.stringify({ caseNumber })
+      }
+    );
   },
 
   async relinquishCase(caseId: string) {
-    return apiFetch<{ success: boolean; message?: string }>(`/api/cases/${encodeURIComponent(caseId)}/relinquish`, {
-      method: 'POST'
-    });
+    return apiFetch<{ success: boolean; message?: string }>(
+      `/api/cases/${encodeURIComponent(caseId)}/relinquish`,
+      {
+        method: 'POST'
+      }
+    );
   },
 
   async sendCaseToForensic(caseId: string) {
-    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>(`/api/cases/${encodeURIComponent(caseId)}/send-to-forensic`, {
-      method: 'POST'
-    });
+    return apiFetch<{ success: boolean; message?: string; case?: CaseRecord }>(
+      `/api/cases/${encodeURIComponent(caseId)}/send-to-forensic`,
+      {
+        method: 'POST'
+      }
+    );
   },
 
   async uploadFile(
@@ -170,22 +187,42 @@ export const api = {
     isMajorVersion?: boolean
   ) {
     const formData = new FormData();
+
     if (file) {
       formData.append('file', file);
     }
+
     formData.append('fallbackFileName', fallbackFileName);
     formData.append('category', category);
     formData.append('description', description);
-    if (digitalSignature) formData.append('digitalSignature', digitalSignature);
-    if (signerPublicKey) formData.append('signerPublicKey', signerPublicKey);
-    if (parentFileId) formData.append('parentFileId', parentFileId);
-    if (changeSummary) formData.append('changeSummary', changeSummary);
-    if (isMajorVersion !== undefined) formData.append('isMajorVersion', String(isMajorVersion));
 
-    return apiFetch<{ success: boolean; message?: string; file?: UploadedCaseFile }>(`/api/cases/${encodeURIComponent(caseId)}/files`, {
-      method: 'POST',
-      body: formData
-    });
+    if (digitalSignature) {
+      formData.append('digitalSignature', digitalSignature);
+    }
+
+    if (signerPublicKey) {
+      formData.append('signerPublicKey', signerPublicKey);
+    }
+
+    if (parentFileId) {
+      formData.append('parentFileId', parentFileId);
+    }
+
+    if (changeSummary) {
+      formData.append('changeSummary', changeSummary);
+    }
+
+    if (isMajorVersion !== undefined) {
+      formData.append('isMajorVersion', String(isMajorVersion));
+    }
+
+    return apiFetch<{ success: boolean; message?: string; file?: UploadedCaseFile }>(
+      `/api/cases/${encodeURIComponent(caseId)}/files`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
   },
 
   async getSecurityLogs() {
@@ -196,22 +233,41 @@ export const api = {
     return apiFetch<AuditLogRecord[]>('/api/logs/audit-logs');
   },
 
-  async recordAuditLog(action: AuditLogRecord['action'], document_id?: string, case_id?: string) {
+  async recordAuditLog(
+    action: AuditLogRecord['action'],
+    document_id?: string,
+    case_id?: string
+  ) {
     return apiFetch<{ success: boolean }>('/api/logs/audit-logs', {
       method: 'POST',
-      body: JSON.stringify({ action, document_id, case_id })
+      body: JSON.stringify({
+        action,
+        document_id,
+        case_id
+      })
     });
   },
 
   async verifyOnBlockchain(fileId: string) {
-    return apiFetch<{ success: boolean; verification: BlockchainVerificationResult }>(`/api/blockchain/verify/${encodeURIComponent(fileId)}`);
+    return apiFetch<{
+      success: boolean;
+      verification: BlockchainVerificationResult;
+    }>(`/api/blockchain/verify/${encodeURIComponent(fileId)}`);
   },
 
   async getBlockchainLedger() {
-    return apiFetch<{ success: boolean; blockHeight: number; contractAddress: string; ledger: BlockchainLedgerRecord[] }>('/api/blockchain/ledger');
+    return apiFetch<{
+      success: boolean;
+      blockHeight: number;
+      contractAddress: string;
+      ledger: BlockchainLedgerRecord[];
+    }>('/api/blockchain/ledger');
   },
 
   async getBlockchainStats() {
-    return apiFetch<{ success: boolean; stats: any }>('/api/blockchain/stats');
+    return apiFetch<{
+      success: boolean;
+      stats: any;
+    }>('/api/blockchain/stats');
   }
 };
